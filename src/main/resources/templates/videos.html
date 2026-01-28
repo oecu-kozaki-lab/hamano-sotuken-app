@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>動画一覧</title>
+    <style>
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', Meiryo, メイリオ, Osaka, 'MS PGothic', arial, helvetica, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .grade-filter {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .grade-filter h3 {
+            margin-bottom: 15px;
+        }
+        
+        /* ★ 区切り線のスタイル */
+        .grade-separator {
+            display: inline-block;
+            width: 1px;
+            height: 20px;
+            background-color: #ddd;
+            margin: 0 10px;
+            vertical-align: middle;
+        }
+        
+        .grade-filter a {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .grade-filter a:hover {
+            background-color: #45a049;
+        }
+        
+        .grade-filter a.active {
+            background-color: #2196F3;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #e0e0e0;
+        }
+        
+        .video-content {
+            padding: 20px;
+        }
+        
+        .video-card h3 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .video-info {
+            margin: 15px 0;
+        }
+        
+        .video-info p {
+            margin: 8px 0;
+            color: #666;
+        }
+        
+        .video-info strong {
+            color: #333;
+        }
+        
+        .keyword-tag {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            margin: 2px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .wikidata-section {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff3e0;
+            border-left: 4px solid #FF9800;
+            border-radius: 5px;
+        }
+        
+        .wikidata-section h4 {
+            margin: 0 0 10px 0;
+            color: #FF9800;
+            font-size: 1em;
+        }
+        
+        .wikidata-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ffe0b2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .wikidata-keyword {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 0.95em;
+        }
+        
+        .wikidata-note {
+            font-size: 0.8em;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .quiz-button {
+            flex: 1;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .quiz-button:hover {
+            background-color: #1976D2;
+        }
+        
+        .video-link-button {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .video-link-button:hover {
+            background-color: #45a049;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2196F3;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← トップページに戻る</a>
+    
+    <h1>📚 NHK for School 動画一覧</h1>
+    
+    <div class="grade-filter">
+        <h3>学年でフィルター：</h3>
+        
+        <!-- ★ 1行に全て配置 -->
+        <a th:href="@{/videos}" th:classappend="${selectedGrade == null} ? 'active' : ''">すべて</a>
+        
+        <span class="grade-separator"></span>
+        
+        <a th:href="@{/videos(grade='小3')}" th:classappend="${selectedGrade == '小3'} ? 'active' : ''">小3</a>
+        <a th:href="@{/videos(grade='小4')}" th:classappend="${selectedGrade == '小4'} ? 'active' : ''">小4</a>
+        <a th:href="@{/videos(grade='小5')}" th:classappend="${selectedGrade == '小5'} ? 'active' : ''">小5</a>
+        <a th:href="@{/videos(grade='小6')}" th:classappend="${selectedGrade == '小6'} ? 'active' : ''">小6</a>
+        
+        <span class="grade-separator"></span>
+        
+        <a th:href="@{/videos(grade='中1')}" th:classappend="${selectedGrade == '中1'} ? 'active' : ''">中1</a>
+        <a th:href="@{/videos(grade='中2')}" th:classappend="${selectedGrade == '中2'} ? 'active' : ''">中2</a>
+        <a th:href="@{/videos(grade='中3')}" th:classappend="${selectedGrade == '中3'} ? 'active' : ''">中3</a>
+    </div>
+    
+    <div class="video-grid">
+        <div th:each="video : ${videos}" class="video-card">
+            <img th:src="${video.thumbnailUrl}" 
+                 th:alt="${video.title}" 
+                 class="video-thumbnail"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E画像なし%3C/text%3E%3C/svg%3E'">
+            
+            <div class="video-content">
+                <h3 th:text="${video.title}">動画タイトル</h3>
+                
+                <div class="video-info">
+                    <p><strong>対象学年：</strong> <span th:text="${video.grades}"></span></p>
+                    
+                    <p><strong>キーワード：</strong></p>
+                    <div>
+                        <span th:each="kw : ${#strings.arraySplit(video.keyword, ' ')}" 
+                              class="keyword-tag" 
+                              th:text="${kw}"></span>
+                    </div>
+                </div>
+                
+                <div th:if="${video.keywordWikidataLinks != null and !video.keywordWikidataLinks.isEmpty()}" 
+                     class="wikidata-section">
+                    <h4>🔗 Wikidata情報あり</h4>
+                    
+                    <div th:each="linkInfo : ${video.keywordWikidataLinks}" class="wikidata-item">
+                        <span class="wikidata-keyword" th:text="${linkInfo.keyword}"></span>
+                        <span class="wikidata-note">(クイズ生成時に取得)</span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <a th:href="${video.url}" 
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="video-link-button">
+                        📺 動画を見る
+                    </a>
+                    <a th:href="@{/video/quiz(keyword=${video.keyword}, grade=${video.grades})}" 
+                       class="quiz-button">
+                        🎯 クイズを解く
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${videos.isEmpty()}" style="text-align: center; padding: 50px;">
+        <p style="font-size: 1.2em; color: #666;">該当する動画が見つかりませんでした。</p>
+    </div>
+</body>
+</html>
+</html>

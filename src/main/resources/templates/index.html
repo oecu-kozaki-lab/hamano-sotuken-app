@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>学年選択 | NHK for School クイズ</title>
+
+  <style>
+    body {
+      font-family: "メイリオ", sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .grade-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .grade-btn {
+      display: block;
+      padding: 18px;
+      font-size: 1.1em;
+      border-radius: 12px;
+      background: #0078d7;
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    .grade-btn:hover {
+      background: #005fa3;
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      margin-top: 50px;
+      margin-bottom: 20px;
+      font-size: 1.2em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>学年を選択してください</h1>
+
+  <div class="section-title">小学生</div>
+  <div class="grade-grid">
+    <a th:href="@{/videos(grade='小3')}" class="grade-btn">小3</a>
+    <a th:href="@{/videos(grade='小4')}" class="grade-btn">小4</a>
+    <a th:href="@{/videos(grade='小5')}" class="grade-btn">小5</a>
+    <a th:href="@{/videos(grade='小6')}" class="grade-btn">小6</a>
+  </div>
+
+  <div class="section-title">中学生</div>
+  <div class="grade-grid">
+    <a th:href="@{/videos(grade='中1')}" class="grade-btn">中1</a>
+    <a th:href="@{/videos(grade='中2')}" class="grade-btn">中2</a>
+    <a th:href="@{/videos(grade='中3')}" class="grade-btn">中3</a>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>クイズ | NHK for School</title>
+  <style>
+    body {
+      font-family: "メイリオ", sans-serif;
+      background-color: #f5f7fa;
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .quiz-container {
+      background-color: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .info {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #e7f3ff;
+      border-radius: 8px;
+    }
+    
+    .progress {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .question {
+      font-size: 1.3em;
+      margin-bottom: 25px;
+      color: #333;
+      font-weight: bold;
+      line-height: 1.6;
+    }
+    
+    .choices {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 30px;
+    }
+    
+    .choices li {
+      margin-bottom: 12px;
+    }
+    
+    .choices button {
+      width: 100%;
+      padding: 15px 20px;
+      text-align: left;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background-color: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    .choices button:hover:not(:disabled) {
+      background-color: #e7f3ff;
+      border-color: #0078d7;
+      transform: translateX(5px);
+    }
+    
+    .choices button:disabled {
+      cursor: not-allowed;
+    }
+    
+    .choices button.correct {
+      background-color: #d4edda;
+      border-color: #28a745;
+      font-weight: bold;
+    }
+    
+    .choices button.wrong {
+      background-color: #f8d7da;
+      border-color: #dc3545;
+    }
+    
+    .result {
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+    .result.correct {
+      background-color: #d4edda;
+      border: 2px solid #28a745;
+      color: #155724;
+    }
+    
+    .result.wrong {
+      background-color: #f8d7da;
+      border: 2px solid #dc3545;
+      color: #721c24;
+    }
+    
+    /* ★ Wikidata情報表示エリア */
+    .wikidata-info {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border: 2px solid #0078d7;
+      border-radius: 8px;
+    }
+    
+    .wikidata-info h3 {
+      color: #0078d7;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+    }
+    
+    .wikidata-info h3::before {
+      content: "📚";
+      margin-right: 8px;
+    }
+    
+    .wikidata-info .info-item {
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    
+    .wikidata-info .info-label {
+      font-weight: bold;
+      color: #555;
+      display: inline-block;
+      min-width: 100px;
+    }
+    
+    .wikidata-info .info-value {
+      color: #333;
+    }
+    
+    .wikidata-info .detail-definition {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: white;
+      border-left: 4px solid #0078d7;
+      border-radius: 4px;
+      line-height: 1.8;
+    }
+    
+    .wikidata-info .properties {
+      margin-top: 15px;
+    }
+    
+    .wikidata-info .property-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .wikidata-info .property-item:last-child {
+      border-bottom: none;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: inline-block;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .btn-primary {
+      background-color: #0078d7;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #005fa3;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      padding: 20px;
+      color: #721c24;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  
+  <!-- 情報表示 -->
+  <div class="info">
+    <div class="progress">
+      <div>
+        <strong>学年：</strong><span th:text="${grade}">小3</span>
+      </div>
+      <div>
+        <strong>問題：</strong>
+        <span th:text="${currentIndex != null ? currentIndex + 1 : 1}">1</span> / 
+        <span th:text="${totalQuestions != null ? totalQuestions : '?'}">5</span>
+      </div>
+    </div>
+    <div>
+      <strong>現在の正解数：</strong>
+      <span th:text="${correctCount != null ? correctCount : 0}">0</span> / 
+      <span th:text="${totalCount != null ? totalCount : 0}">0</span>
+    </div>
+  </div>
+
+  <!-- クイズが存在する場合 -->
+  <div th:if="${quiz != null}">
+    <h2>問題</h2>
+    
+    <div class="question" th:text="${quiz.question}">
+      問題文がここに表示されます
+    </div>
+    
+    <ul class="choices" id="choicesList">
+      <!-- JavaScriptでランダムに並び替える -->
+    </ul>
+    
+    <!-- 結果表示エリア -->
+    <div id="result" class="result hidden"></div>
+
+    <!-- ★ Wikidata情報表示エリア -->
+    <div id="wikidataInfo" class="wikidata-info hidden">
+      <h3>追加情報</h3>
+      <div id="wikidataContent"></div>
+    </div>
+
+    <!-- 次の問題へのリンク（hidden状態） -->
+    <div id="nextButtonDiv" class="hidden" style="margin-top: 20px;">
+      <a href="#" id="nextButton" class="btn btn-primary">次の問題へ →</a>
+    </div>
+  </div>
+
+  <!-- クイズが生成できなかった場合 -->
+  <div class="error" th:if="${quiz == null}">
+    <h3>⚠️ エラー</h3>
+    <p>クイズの生成に失敗しました。</p>
+    <p><strong>原因：</strong>キーワードが空、またはOpenAI APIの呼び出しに失敗した可能性があります。</p>
+  </div>
+
+  <!-- ナビゲーション -->
+  <div style="margin-top: 20px;">
+    <a href="/" class="btn btn-secondary">学年選択に戻る</a>
+  </div>
+
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  
+  // Thymeleafから値を取得
+  const choices = /*[[${quiz?.choices}]]*/ [];
+  const correctIndex = /*[[${quiz?.answerIndex}]]*/ 0;
+  const keyword = /*[[${keyword}]]*/ '';
+  const grade = /*[[${grade}]]*/ '';
+  const nextIndex = /*[[${index}]]*/ 1;
+  
+  // ★ Wikidata情報を取得
+  const wikidataInfo = /*[[${wikidataInfo}]]*/ null;
+  
+  // 選択肢をランダムに並び替え
+  const shuffledChoices = choices.map((choice, index) => ({
+    text: choice,
+    originalIndex: index
+  }));
+  
+  // Fisher-Yates シャッフル
+  for (let i = shuffledChoices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+  }
+  
+  // 画面に表示
+  const choicesList = document.getElementById('choicesList');
+  shuffledChoices.forEach((item, displayIndex) => {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = (displayIndex + 1) + '. ' + item.text;
+    button.onclick = () => checkAnswer(item.originalIndex, correctIndex, button);
+    li.appendChild(button);
+    choicesList.appendChild(li);
+  });
+  
+  function checkAnswer(selectedIndex, correctIndex, selectedButton) {
+    const buttons = document.querySelectorAll('.choices button');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    const resultDiv = document.getElementById('result');
+    const nextButtonDiv = document.getElementById('nextButtonDiv');
+    const nextButton = document.getElementById('nextButton');
+    const wikidataDiv = document.getElementById('wikidataInfo');
+    const wikidataContent = document.getElementById('wikidataContent');
+    
+    const isCorrect = (selectedIndex === correctIndex);
+    
+    if (isCorrect) {
+      selectedButton.classList.add('correct');
+      resultDiv.className = 'result correct';
+      resultDiv.textContent = '✅ 正解です！';
+    } else {
+      selectedButton.classList.add('wrong');
+      buttons.forEach(btn => {
+        const btnText = btn.textContent.substring(3);
+        if (btnText === choices[correctIndex]) {
+          btn.classList.add('correct');
+        }
+      });
+      resultDiv.className = 'result wrong';
+      resultDiv.textContent = '❌ 不正解です。正解は「' + choices[correctIndex] + '」でした。';
+    }
+    
+    resultDiv.classList.remove('hidden');
+    
+    // ★ Wikidata情報を表示
+    if (wikidataInfo) {
+      displayWikidataInfo(wikidataInfo, wikidataContent);
+      wikidataDiv.classList.remove('hidden');
+    }
+    
+    // 次の問題へのリンクを設定
+    const encodedKeyword = encodeURIComponent(keyword);
+    const encodedGrade = encodeURIComponent(grade);
+    nextButton.href = `/quiz?keyword=${encodedKeyword}&grade=${encodedGrade}&index=${nextIndex}&isCorrect=${isCorrect}`;
+    
+    nextButtonDiv.classList.remove('hidden');
+  }
+  
+  // ★ Wikidata情報を表示する関数
+  function displayWikidataInfo(info, container) {
+    let html = '';
+    
+    // 名称
+    if (info.label) {
+      html += `<div class="info-item"><span class="info-label">名称：</span><span class="info-value">${escapeHtml(info.label)}</span></div>`;
+    }
+    
+    // 簡易説明
+    if (info.description) {
+      html += `<div class="info-item"><span class="info-label">説明：</span><span class="info-value">${escapeHtml(info.description)}</span></div>`;
+    }
+    
+    // 別名
+    if (info.aliases && info.aliases.length > 0) {
+      html += `<div class="info-item"><span class="info-label">別名：</span><span class="info-value">${escapeHtml(info.aliases.join('、'))}</span></div>`;
+    }
+    
+    // Wikipedia抜粋（詳細定義）
+    if (info.wikipediaExtract) {
+      html += `<div class="detail-definition">${escapeHtml(info.wikipediaExtract)}</div>`;
+    }
+    
+    // プロパティ情報
+    if (info.properties && info.properties.length > 0) {
+      html += '<div class="properties"><strong>詳細情報：</strong>';
+      info.properties.forEach(prop => {
+        html += `<div class="property-item"><span class="info-label">${escapeHtml(prop.name)}：</span><span class="info-value">${escapeHtml(prop.value)}</span></div>`;
+      });
+      html += '</div>';
+    }
+    
+    container.innerHTML = html;
+  }
+  
+  // HTMLエスケープ関数
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+  
+  /*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>クイズ完了 | NHK for School</title>
+  <style>
+    body {
+      font-family: "メイリオ", sans-serif;
+      background-color: #f5f7fa;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .finish-container {
+      background-color: white;
+      border-radius: 12px;
+      padding: 50px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #28a745;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    
+    .icon {
+      font-size: 5em;
+      margin-bottom: 20px;
+    }
+    
+    .score {
+      font-size: 3em;
+      font-weight: bold;
+      color: #0078d7;
+      margin: 30px 0;
+    }
+    
+    .score-detail {
+      font-size: 1.5em;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    .percentage {
+      font-size: 2em;
+      color: #28a745;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+    
+    p {
+      font-size: 1.2em;
+      color: #666;
+      margin-bottom: 30px;
+    }
+    
+    .btn {
+      padding: 15px 30px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 18px;
+      display: inline-block;
+      margin: 10px;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background-color: #0078d7;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #005fa3;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+
+<div class="finish-container">
+  <div class="icon">🎉</div>
+  <h1>お疲れさまでした！</h1>
+  
+  <div class="score">
+    <span th:text="${correctCount != null ? correctCount : 0}">0</span> 問正解！
+  </div>
+  
+  <div class="score-detail">
+    全 <span th:text="${totalCount != null ? totalCount : 0}">0</span> 問中
+  </div>
+  
+  <div class="percentage" th:if="${totalCount != null and totalCount > 0}">
+    正解率: <span th:text="${#numbers.formatDecimal((correctCount * 100.0 / totalCount), 1, 1)}">0</span>%
+  </div>
+  
+  <p>
+    <strong th:text="${grade}">小3</strong> のクイズを全て完了しました！
+  </p>
+  
+  <div>
+    <a th:href="@{/videos(grade=${grade})}" class="btn btn-primary">
+      他の動画を見る
+    </a>
+    <a href="/" class="btn btn-secondary">
+      学年選択に戻る
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

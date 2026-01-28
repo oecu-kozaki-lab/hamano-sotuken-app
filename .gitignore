@@ -1,0 +1,41 @@
+# Eclipse metadata
+.metadata/
+Servers/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+.classpath
+.project
+.settings/
+
+# ログ
+*.log
+
+# 環境変数（重要！APIキーは含めない）
+.env
+application-local.properties
+
+# OS
+Thumbs.db
+
+# テスト
+*.class
+
+# Eclipse metadata
+.metadata/
+Servers/
